@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { toggleMenu } from "../utils/appSlice";
 import { useDispatch } from "react-redux";
+import { YOUTUBE_SEARCH_API } from "../utils/constants";
 
 const Head = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestoins] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => getSearchSuggestions(), 200);
+  }, [searchQuery]);
+
+  const getSearchSuggestions = async () => {
+    const data = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+    const json = await data.json();
+    setSuggestions(json[1]);
+  };
+
   const dispatch = useDispatch();
 
   const toggleMenuHandler = () => {
@@ -24,13 +39,30 @@ const Head = () => {
         />
       </div>
       <div className="col-span-10 ">
-        <input
-          className="w-1/2 border border-gray-400  p-2 rounded-l-full"
-          type="text"
-        />
-        <button className="border border-gray-400 p-2 rounded-r-full">
-          Search
-        </button>
+        <div>
+          <input
+            className="px-5 w-1/2 border border-gray-400  p-2 rounded-l-full"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSuggestoins(true)}
+            onBlur={() => setShowSuggestoins(false)}
+          />
+          <button className="border border-gray-400 p-2 rounded-r-full bg-gray-100">
+            Search
+          </button>
+        </div>
+        {showSuggestions && (
+          <div className="fixed bg-white py-2 px-2 w-[37rem] shadow-lg rounded-lg border border-gray-100">
+            <ul>
+              {suggestions.map((s) => (
+                <li key={s} className="py-2 px-3 shadow-sm hover:bg-gray-100">
+                  🔍{s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="col-span-1">
         <img
